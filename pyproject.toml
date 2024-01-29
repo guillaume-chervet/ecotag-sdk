@@ -2,8 +2,10 @@
 name = "ecotag_sdk"
 version = "0.1.0"
 description = "Ecotag SDK"
+url = "https://github.com/guillaume-chervet/ecotag-sdk"
 authors = ["Guillaume Chervet <guillaume.chervet@gmail.com>"]
 readme = "README.md"
+license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.10"
