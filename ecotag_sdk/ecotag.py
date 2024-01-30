@@ -69,6 +69,8 @@ async def create_dataset(dataset: Dataset, api_information: ApiInformation):
             await response.text()
 
         dataset_id = await get_dataset_id(api_url, dataset_name, headers, session)
+        if(dataset_id is None):
+            raise Exception(f"Dataset {dataset_name} not found")
 
         # Upload image files in the directory.
         print("start uploading files")
@@ -114,18 +116,26 @@ async def get_team_id(api_url, headers, session, team_name):
 
 async def get_dataset_id(api_url, dataset_name, headers, session):
     # Get Dataset ID.
-    dataset_id = None
     async with session.get(f"{api_url}/Datasets", headers=headers) as response:
         datasets = await response.json()
         for dataset in datasets:
             if dataset["name"] == dataset_name:
                 dataset_id = dataset["id"]
-                break
-        if dataset_id is None:
-            raise Exception(f"Dataset {dataset_name} not found")
-        print(f"Dataset ID: {dataset_id}")
-    return dataset_id
+                print(f"Dataset ID: {dataset_id}")
+                return dataset_id
+    return None
 
+async def get_dataset(api_information: ApiInformation, dataset_name: str):
+    jwt_token = api_information.access_token
+    api_url = api_information.api_url
+    headers = {"Authorization": f"Bearer {jwt_token}"}
+    async with aiohttp.ClientSession() as session:
+        async with session.get(f"{api_url}/Datasets", headers=headers) as response:
+            datasets = await response.json()
+            for dataset in datasets:
+                if dataset["name"] == dataset_name:
+                    return dataset
+            return None
 
 async def create_project(project: Project, api_information: ApiInformation):
     project_name = project.project_name
@@ -139,6 +149,8 @@ async def create_project(project: Project, api_information: ApiInformation):
 
     async with aiohttp.ClientSession() as session:
         dataset_id = await get_dataset_id(api_url, dataset_name, headers, session)
+        if(dataset_id is None):
+            raise Exception(f"Dataset {dataset_name} not found")
         team_id = await get_team_id(api_url, headers, session, team_name)
 
         # Create Image Classification Project.
