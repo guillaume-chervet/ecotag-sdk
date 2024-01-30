@@ -189,6 +189,21 @@ async def get_project_id(api_url, project_name, headers, session):
     return project_id
 
 
+async def get_project(api_information: ApiInformation, project_name: str):
+    jwt_token = api_information.access_token
+    api_url = api_information.api_url
+    headers = {"Authorization": f"Bearer {jwt_token}"}
+    async with aiohttp.ClientSession() as session:
+        async with session.get(f"{api_url}/projects", headers=headers) as response:
+            if response.status > 400:
+                print("Error: ", response.code, response.reason)
+                return None
+            projects = await response.json()
+            for project in projects:
+                if project["name"] == project_name:
+                    return project
+        return None
+
 async def download_annotations(
     api_information: ApiInformation,
     project_name: str,
